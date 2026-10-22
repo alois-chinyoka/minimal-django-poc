@@ -32,6 +32,11 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: django-secret
+                  key: postgres-password
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: django-secret
                   key: secret-key
       {{- end }}
       containers:
@@ -53,6 +58,11 @@ spec:
             - name: POSTGRES_PORT
               value: "{{ .Values.postgres.port }}"
             - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: django-secret
+                  key: postgres-password
+            - name: SECRET_KEY
               valueFrom:
                 secretKeyRef:
                   name: django-secret
