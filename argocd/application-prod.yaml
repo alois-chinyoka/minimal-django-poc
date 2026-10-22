@@ -4,7 +4,7 @@ metadata:
   name: minimal-django-poc-prod
   namespace: argocd
   finalizers:
-    - resources-finalizer.argocd.argoproj.io
+    - minimal-django-poc.argoproj.io/resources-finalizer
 spec:
   project: minimal-django-poc
   source:
@@ -12,13 +12,14 @@ spec:
     path: chart
     targetRevision: HEAD
     helm:
-      valuesFiles:
-        - values-prod.yaml
-      parameters: []
+      values: |
+        replicas: 2
+        django:
+          image: 320119139359.dkr.ecr.eu-central-1.amazonaws.com/skillregistry-poc/minimal-django-poc
+          tag: latest
   destination:
     server: https://kubernetes.default.svc
     namespace: prod
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
-    automated: null
