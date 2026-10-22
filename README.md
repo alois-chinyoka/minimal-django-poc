@@ -151,3 +151,4 @@ See `docs/CICD.md` for detailed OIDC configuration.
 - Run first deployment
 AWS setup complete
 Updated OIDC thumbprint
+Using existing github-actions role
