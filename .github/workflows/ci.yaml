@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: eu-central-1
+  ECR_REGISTRY_ALIAS: skillregistry-poc
+  ECR_IMAGE: minimal-django-poc
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: tasks_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd "pg_isready -U postgres -d tasks_db"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+        ports:
+          - 5432:5432
+
+    env:
+      DEBUG: "false"
+      POSTGRES_DB: tasks_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST: 127.0.0.1
+      POSTGRES_PORT: "5432"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run migrations
+        run: python manage.py migrate
+
+      - name: Run health check
+        run: python manage.py shell -c "from django.apps import apps; print('✓ Django OK')"
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push image
+        run: |
+          COMMIT_SHA=${{ github.sha }}
+          SHORT_SHA=${COMMIT_SHA:0:8}
+          DOCKER_REGISTRY=${{ steps.login-ecr.outputs.registry }}
+          
+          docker build \
+            -t ${DOCKER_REGISTRY}/${ECR_REGISTRY_ALIAS}/${ECR_IMAGE}:sha-${SHORT_SHA} \
+            -t ${DOCKER_REGISTRY}/${ECR_REGISTRY_ALIAS}/${ECR_IMAGE}:latest \
+            .
+          
+          docker push ${DOCKER_REGISTRY}/${ECR_REGISTRY_ALIAS}/${ECR_IMAGE}:sha-${SHORT_SHA}
+          docker push ${DOCKER_REGISTRY}/${ECR_REGISTRY_ALIAS}/${ECR_IMAGE}:latest

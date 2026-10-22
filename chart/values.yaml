@@ -1,0 +1,22 @@
+replicas: 1
+
+django:
+  image: minimal-django-poc
+  tag: "latest"
+  cpu: "100m"
+  memory: "128Mi"
+
+postgres:
+  host: "postgres.default.svc.cluster.local"
+  port: 5432
+  database: "tasks_db"
+  user: "postgres"
+  # password should be set via secret
+
+migrations:
+  enabled: true
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000

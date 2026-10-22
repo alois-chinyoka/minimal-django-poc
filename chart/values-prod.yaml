@@ -1,0 +1,23 @@
+replicas: 2
+
+django:
+  image: 320119139359.dkr.ecr.eu-central-1.amazonaws.com/skillregistry-poc/minimal-django-poc
+  tag: latest
+  cpu: "250m"
+  memory: "256Mi"
+  env:
+    DEBUG: "False"
+
+postgres:
+  host: "postgres.default.svc.cluster.local"
+  port: 5432
+  database: "tasks_db_prod"
+  user: "postgres"
+
+migrations:
+  enabled: true
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000

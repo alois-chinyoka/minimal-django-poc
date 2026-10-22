@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: minimal-django-poc-prod
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: minimal-django-poc
+  source:
+    repoURL: https://github.com/alois-chinyoka/minimal-django-poc
+    path: chart
+    targetRevision: HEAD
+    helm:
+      valuesFiles:
+        - values-prod.yaml
+      parameters: []
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: prod
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+    automated: null
