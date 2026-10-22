@@ -149,3 +149,4 @@ See `docs/CICD.md` for detailed OIDC configuration.
 - Create PostgreSQL databases on RDS
 - Install ArgoCD and register applications
 - Run first deployment
+AWS setup complete
