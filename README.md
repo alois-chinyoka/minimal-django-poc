@@ -150,3 +150,4 @@ See `docs/CICD.md` for detailed OIDC configuration.
 - Install ArgoCD and register applications
 - Run first deployment
 AWS setup complete
+Updated OIDC thumbprint
