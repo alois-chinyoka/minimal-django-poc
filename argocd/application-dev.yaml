@@ -15,11 +15,6 @@ spec:
       valueFiles:
         - values.yaml
         - values-dev.yaml
-      values: |
-        replicas: 1
-        django:
-          image: 320119139359.dkr.ecr.eu-central-1.amazonaws.com/skillregistry-poc/minimal-django-poc
-          tag: latest
   destination:
     server: https://kubernetes.default.svc
     namespace: dev
