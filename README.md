@@ -95,13 +95,11 @@ The Django container automatically runs migrations before starting the server.
 ## Deployment
 
 ### DEV (Trunk-based)
-1. Push to PR branch
-2. GitHub Actions builds image with `sha-<commit:8>` tag
-3. Update `chart/values-dev.yaml` with new image tag in GitHub UI
-4. ArgoCD detects change → OutOfSync
-5. Click "Sync" in ArgoCD UI
-6. Init container runs migrations
-7. Django pod starts
+1. Push to a PR branch and merge to `main` (dev tracks `HEAD`, so unmerged commits are not deployed)
+2. GitHub Actions builds and pushes `sha-<commit:8>` to ECR
+3. Set `tag:` in `chart/values-dev.yaml` to the new `sha-` tag, commit, and push to `main`
+4. Click "Refresh" then "Sync" for `minimal-django-poc-dev` in ArgoCD
+5. Init container runs migrations, then the Django pod starts
 
 ### PROD (Semantic Versioning)
 1. Create and push tag: `git tag -a v0.1.0 && git push origin v0.1.0`
@@ -128,27 +126,17 @@ The Django container automatically runs migrations before starting the server.
 ### Create ECR Repository
 ```bash
 aws ecr create-repository \
-  --repository-name minimal-django-poc \
+  --repository-name skillregistry-poc/minimal-django-poc \
   --region eu-central-1
 ```
 
 ### OIDC Setup (GitHub Actions)
-See `docs/CICD.md` for detailed OIDC configuration.
+- The IAM role `github-actions` already exists and is referenced by the `AWS_ROLE_TO_ASSUME` repository secret.
+- Its trust policy must allow `repo:<org>/minimal-django-poc:*`.
+- Its policy must allow ECR push to `skillregistry-poc/minimal-django-poc`.
 
 ## Troubleshooting
 
 - **Init container fails**: Check logs with `kubectl describe pod -n dev minimal-django-poc-xxx`
 - **Image not found in ECR**: Verify workflow completed successfully and ECR repository exists
 - **Database connection error**: Check POSTGRES_* environment variables and pod logs
-
-## Next Steps
-
-- Push to GitHub
-- Create EKS clusters (dev/prod)
-- Configure AWS OIDC for GitHub Actions
-- Create PostgreSQL databases on RDS
-- Install ArgoCD and register applications
-- Run first deployment
-AWS setup complete
-Updated OIDC thumbprint
-Using existing github-actions role

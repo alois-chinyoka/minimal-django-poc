@@ -2,7 +2,7 @@ replicas: 1
 
 django:
   image: 320119139359.dkr.ecr.eu-central-1.amazonaws.com/skillregistry-poc/minimal-django-poc
-  tag: latest
+  tag: "sha-6eae1c0a"
   cpu: "100m"
   memory: "128Mi"
   env:
