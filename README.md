@@ -113,7 +113,7 @@ The Django container automatically runs migrations before starting the server.
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | DEBUG | False | Django debug mode |
-| SECRET_KEY | dev-secret-key-not-for-production | Django secret (should be set in production) |
+| SECRET_KEY | (required) | Django secret; app fails to start if unset |
 | ALLOWED_HOSTS | localhost,127.0.0.1 | Comma-separated allowed hosts |
 | POSTGRES_DB | tasks_db | Database name |
 | POSTGRES_USER | postgres | Database user |

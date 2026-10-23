@@ -9,7 +9,7 @@ django:
     DEBUG: "False"
 
 postgres:
-  host: "postgres.default.svc.cluster.local"
+  host: "postgres.prod.svc.cluster.local"
   port: 5432
   database: "tasks_db_prod"
   user: "postgres"

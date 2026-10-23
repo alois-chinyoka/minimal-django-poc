@@ -12,11 +12,9 @@ spec:
     path: chart
     targetRevision: HEAD
     helm:
-      values: |
-        replicas: 2
-        django:
-          image: 320119139359.dkr.ecr.eu-central-1.amazonaws.com/skillregistry-poc/minimal-django-poc
-          tag: latest
+      valueFiles:
+        - values.yaml
+        - values-prod.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: prod
