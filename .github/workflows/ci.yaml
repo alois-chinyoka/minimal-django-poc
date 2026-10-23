@@ -35,6 +35,7 @@ jobs:
 
     env:
       DEBUG: "false"
+      SECRET_KEY: ${{ secrets.DJANGO_TEST_SECRET_KEY }}
       POSTGRES_DB: tasks_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
