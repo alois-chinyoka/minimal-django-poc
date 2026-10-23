@@ -4,6 +4,8 @@ metadata:
   name: minimal-django-poc
   labels:
     app: minimal-django-poc
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   replicas: {{ .Values.replicas }}
   selector:
@@ -14,31 +16,6 @@ spec:
       labels:
         app: minimal-django-poc
     spec:
-      {{- if .Values.migrations.enabled }}
-      initContainers:
-        - name: django-migrate
-          image: "{{ .Values.django.image }}:{{ .Values.django.tag }}"
-          command: ["python", "manage.py", "migrate", "--noinput"]
-          env:
-            - name: POSTGRES_DB
-              value: "{{ .Values.postgres.database }}"
-            - name: POSTGRES_USER
-              value: "{{ .Values.postgres.user }}"
-            - name: POSTGRES_HOST
-              value: "{{ .Values.postgres.host }}"
-            - name: POSTGRES_PORT
-              value: "{{ .Values.postgres.port }}"
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: django-secret
-                  key: postgres-password
-            - name: SECRET_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: django-secret
-                  key: secret-key
-      {{- end }}
       containers:
         - name: django
           image: "{{ .Values.django.image }}:{{ .Values.django.tag }}"

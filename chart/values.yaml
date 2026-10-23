@@ -12,6 +12,9 @@ postgres:
   database: "tasks_db"
   user: "postgres"
   # password should be set via secret
+  deploy: true
+  image: "postgres:16"
+  storage: "1Gi"
 
 migrations:
   enabled: true

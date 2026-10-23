@@ -65,7 +65,7 @@ minimal-django-poc/
 ### ArgoCD GitOps
 - Manual sync policy (no automatic deployments on code push)
 - DEV environment: trunk-based (`HEAD` revision)
-- PROD environment: tag-based (sync to specific git tag)
+- PROD environment: image pinned by `django.tag` in `chart/values-prod.yaml`
 - Automatic namespace creation
 
 ## Local Development
@@ -94,19 +94,31 @@ The Django container automatically runs migrations before starting the server.
 
 ## Deployment
 
-### DEV (Trunk-based)
-1. Push to a PR branch and merge to `main` (dev tracks `HEAD`, so unmerged commits are not deployed)
-2. GitHub Actions builds and pushes `sha-<commit:8>` to ECR
-3. Set `tag:` in `chart/values-dev.yaml` to the new `sha-` tag, commit, and push to `main`
-4. Click "Refresh" then "Sync" for `minimal-django-poc-dev` in ArgoCD
-5. Init container runs migrations, then the Django pod starts
+Full setup, troubleshooting, and known gaps are in [docs/CICD.md](docs/CICD.md).
 
-### PROD (Semantic Versioning)
-1. Create and push tag: `git tag -a v0.1.0 && git push origin v0.1.0`
-2. GitHub Actions builds image with `v0.1.0` tag
-3. Update `chart/values-prod.yaml` with new version
-4. ArgoCD syncs
-5. Migrations run → pods restart with new image
+### DEV (trunk-based)
+1. Merge to `main`. CI builds and pushes `sha-<commit:8>` to ECR.
+2. Set `django.tag` in `chart/values-dev.yaml` to the new `sha-` tag. Commit and push to `main`.
+3. In ArgoCD, refresh and sync `minimal-django-poc-dev`.
+4. The migrate init container runs before the Django container starts.
+
+### PROD (semantic versioning)
+1. Tag and push: `git tag v0.1.0 && git push origin v0.1.0`. The release workflow pushes `v0.1.0` and `latest` to ECR.
+2. Set `django.tag` in `chart/values-prod.yaml` to `v0.1.0`. Commit and push to `main`. ArgoCD tracks `HEAD`, so prod changes only when this commit lands.
+3. Sync and wait for health:
+   ```bash
+   argocd app sync minimal-django-poc-prod
+   argocd app wait minimal-django-poc-prod --health
+   ```
+4. Verify:
+   ```bash
+   kubectl -n prod port-forward svc/minimal-django-poc 8081:80 &
+   curl -i http://localhost:8081/health/      # expect 200 {"status": "healthy"}
+   curl -i http://localhost:8081/api/tasks/   # expect 200 {"tasks": [...]}
+   ```
+
+### Rollback (PROD)
+Set `django.tag` in `chart/values-prod.yaml` to the previous tag, commit, push to `main`, then sync and wait for health.
 
 ## Environment Variables
 
